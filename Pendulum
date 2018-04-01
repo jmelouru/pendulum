@@ -1,0 +1,85 @@
+import java.awt.*;
+import java.applet.Applet;
+import java.awt.Graphics;
+
+import mainpackage.Circle;
+import mainpackage.Point;
+import mainpackage.Line;
+
+public class Pendulum extends Applet implements Runnable
+{
+	double angle = -60.0;
+	double velocity = 0.0;
+	double acceleration = 0.0;
+	
+	int length = 100; //length of arm
+	
+	Thread main = new Thread(this);
+	
+	Graphics b;
+	Image offscreen;
+	
+	public void init()
+	{
+		this.resize(400, 400);
+		this.setLayout(null);
+		
+		offscreen = createImage(this.getWidth(), this.getHeight());
+		b = offscreen.getGraphics();
+		
+		main.start();
+		
+	}
+	
+	public void paint(Graphics g)
+	{
+		b.setColor(Color.white);
+		b.fillRect(0,  0, this.getWidth(), this.getHeight());
+		//---
+		
+		Point origin = new Point(200, 150); //New (0, 0) point (not translate() function)
+		
+		int x = (int)((float)Math.sin(Math.toRadians(angle)) * length) + origin.getX();
+		int y = (int)((float)Math.cos(Math.toRadians(angle)) * length) + origin.getY();
+		
+		Circle bob = new Circle(x, y, 5);
+		Line arm = new Line(origin, new Point(x, y));
+		//---
+		
+		b.setColor(Color.black);
+		
+		arm.draw(b);
+		bob.draw(b);
+		//---
+		
+		g.drawImage(offscreen, 0, 0, this.getWidth(), this.getHeight(), this);
+	}
+	
+	public void update(Graphics g)
+	{
+		paint(g);
+	}
+	
+	public void run()
+	{
+		while(true)
+		{
+			angle += velocity;
+			
+			acceleration = -0.5 * (float)Math.sin(Math.toRadians(angle));
+			velocity += acceleration;
+			
+			velocity *= 0.999; //Pendulum looses a certain amount of force every swing
+			//---
+			
+			try
+			{
+				main.sleep(15);
+			}catch(Exception e) {}
+			//---
+			
+			repaint();
+		}
+	}
+	
+}//End Display
